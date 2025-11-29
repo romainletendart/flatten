@@ -34,17 +34,9 @@ impl Path {
 
 impl Display for Path {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "[")?;
-        write!(
-            f,
-            "{}",
-            self.0
-                .iter()
-                .map(|path_component| format!("{path_component}"))
-                .reduce(|acc, path_component| format!("{acc},{path_component}"))
-                .unwrap_or(String::new())
-        )?;
-        write!(f, "]")
+        f.write_str("[")?;
+        f.write_str(&itertools::join(self.0.iter(), ","))?;
+        f.write_str("]")
     }
 }
 
