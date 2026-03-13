@@ -13,7 +13,7 @@ enum PathComponent {
 impl Display for PathComponent {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            PathComponent::Index(index) => write!(f, "{index}"),
+            PathComponent::Index(index) => write!(f, "[{index}]"),
             PathComponent::Key(key) => write!(f, "\"{key}\""),
         }
     }
@@ -34,9 +34,8 @@ impl Path {
 
 impl Display for Path {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str("[")?;
-        f.write_str(&itertools::join(self.0.iter(), ","))?;
-        f.write_str("]")
+        f.write_str(".")?;
+        f.write_str(&itertools::join(self.0.iter(), "."))
     }
 }
 
