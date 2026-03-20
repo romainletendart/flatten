@@ -59,7 +59,7 @@ fn to_path_iter(path: Path, json_value: &Value) -> Box<dyn Iterator<Item = (Path
         Value::Object(map) => {
             let it = map.into_iter().flat_map(move |(key, value)| {
                 let new_path =
-                    path.clone() + Path::from_components(&[PathComponent::Key(key.to_string())]);
+                    path.clone() + Path::from_components(&[PathComponent::Key(key.clone())]);
                 to_path_iter(new_path, value)
             });
             Box::new(it)
