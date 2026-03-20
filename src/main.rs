@@ -1,53 +1,10 @@
-use std::vec::Vec;
-use std::{fmt::Display, io::BufReader};
+use std::io::BufReader;
 
 use anyhow::{Context, Error, Result};
 use serde_json::Value;
 
-#[derive(Clone, Debug)]
-enum PathComponent {
-    Key(String),
-    Index(usize),
-}
-
-impl Display for PathComponent {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            PathComponent::Index(index) => write!(f, "[{index}]"),
-            PathComponent::Key(key) => write!(f, "\"{key}\""),
-        }
-    }
-}
-
-#[derive(Clone, Default)]
-struct Path {
-    components: Vec<PathComponent>,
-}
-
-impl Path {
-    fn new(components: &[PathComponent]) -> Self {
-        Self {
-            components: components.to_vec(),
-        }
-    }
-}
-
-impl Display for Path {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str(".")?;
-        f.write_str(&itertools::join(self.components.iter(), "."))
-    }
-}
-
-impl std::ops::Add for Path {
-    type Output = Path;
-
-    fn add(self, rhs: Self) -> Self::Output {
-        Self {
-            components: [self.components, rhs.components].concat(),
-        }
-    }
-}
+use flatten::Path;
+use flatten::PathComponent;
 
 fn to_path_iter(path: Path, json_value: &Value) -> Box<dyn Iterator<Item = (Path, Value)> + '_> {
     match json_value {
