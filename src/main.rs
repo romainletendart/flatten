@@ -20,22 +20,28 @@ impl Display for PathComponent {
 }
 
 #[derive(Clone)]
-struct Path(Vec<PathComponent>);
+struct Path {
+    components: Vec<PathComponent>,
+}
 
 impl Path {
     fn new() -> Self {
-        Self(Vec::new())
+        Self {
+            components: Vec::new(),
+        }
     }
 
     fn from_components(components: &[PathComponent]) -> Self {
-        Self(components.to_vec())
+        Self {
+            components: components.to_vec(),
+        }
     }
 }
 
 impl Display for Path {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(".")?;
-        f.write_str(&itertools::join(self.0.iter(), "."))
+        f.write_str(&itertools::join(self.components.iter(), "."))
     }
 }
 
@@ -43,7 +49,9 @@ impl std::ops::Add for Path {
     type Output = Path;
 
     fn add(self, rhs: Self) -> Self::Output {
-        Self([self.0, rhs.0].concat())
+        Self {
+            components: [self.components, rhs.components].concat(),
+        }
     }
 }
 
