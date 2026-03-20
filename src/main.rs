@@ -19,19 +19,13 @@ impl Display for PathComponent {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Default)]
 struct Path {
     components: Vec<PathComponent>,
 }
 
 impl Path {
-    fn new() -> Self {
-        Self {
-            components: Vec::new(),
-        }
-    }
-
-    fn from_components(components: &[PathComponent]) -> Self {
+    fn new(components: &[PathComponent]) -> Self {
         Self {
             components: components.to_vec(),
         }
@@ -59,15 +53,14 @@ fn to_path_iter(path: Path, json_value: &Value) -> Box<dyn Iterator<Item = (Path
     match json_value {
         Value::Array(array) => {
             let it = array.iter().enumerate().flat_map(move |(index, value)| {
-                let new_path = path.clone() + Path::from_components(&[PathComponent::Index(index)]);
+                let new_path = path.clone() + Path::new(&[PathComponent::Index(index)]);
                 to_path_iter(new_path, value)
             });
             Box::new(it)
         }
         Value::Object(map) => {
             let it = map.into_iter().flat_map(move |(key, value)| {
-                let new_path =
-                    path.clone() + Path::from_components(&[PathComponent::Key(key.clone())]);
+                let new_path = path.clone() + Path::new(&[PathComponent::Key(key.clone())]);
                 to_path_iter(new_path, value)
             });
             Box::new(it)
@@ -84,7 +77,7 @@ fn main() -> Result<(), Error> {
     let json_file = std::fs::File::open(&json_path)
         .context(format!("Couldn't open {json_path}", json_path = &json_path))?;
     let json_reader = BufReader::new(json_file);
-    let path: Path = Path::new();
+    let path: Path = Path::default();
     let json_value: Value = serde_json::from_reader(json_reader)?;
     let it = to_path_iter(path, &json_value);
     for (path, value) in it {
