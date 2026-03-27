@@ -93,3 +93,97 @@ impl Iterator for Stream {
         self.path_value_iterator.next()
     }
 }
+
+#[cfg(test)]
+mod test {
+    use pretty_assertions::assert_eq;
+    use std::io::Cursor;
+
+    use test_case::test_case;
+
+    use crate::json::{Path, Scalar, Stream};
+    use flatten::PathComponent::{Index, Key};
+
+    macro_rules! key {
+        ($e:expr) => {
+            Key($e.to_string())
+        };
+    }
+
+    macro_rules! idx {
+        ($e:expr) => {
+            Index($e)
+        };
+    }
+
+    macro_rules! path {
+        ($($e:expr),*) => {
+            Path::new(&[$($e,)*])
+        };
+    }
+
+    macro_rules! scalar {
+        ($e:expr) => {
+            Scalar($e.to_string())
+        };
+    }
+
+    #[test_case("null")]
+    #[test_case("42")]
+    #[test_case("6.022e23")]
+    #[test_case("true")]
+    #[test_case("false")]
+    #[test_case("\"\""; "empty string")]
+    #[test_case("\"Hello world\"")]
+    fn test_valid_bare_scalar_results_in_valid_stream(json_string: &str) {
+        let reader = Cursor::new(json_string);
+        let stream = Stream::new(reader);
+        let expected: Vec<(Path, Scalar)> = vec![(path![], scalar!(json_string))];
+
+        assert!(stream.is_ok());
+        assert_eq!(stream.unwrap().collect::<Vec<(Path, Scalar)>>(), expected);
+    }
+
+    #[test]
+    fn test_invalid_bare_scalar_results_in_error() {
+        let reader = Cursor::new("Invalid JSON");
+        let stream = Stream::new(reader);
+
+        assert!(stream.is_err());
+    }
+
+    #[test]
+    fn test_heterogeneous_value_results_in_valid_stream() {
+        let json_string = r#"
+{"employees": [
+    {"id": 1, "name": "John Doe", "is_manager": true},
+    {"id": 2, "name": "Jean Dupont", "is_manager": false}
+]}
+        "#;
+        let reader = Cursor::new(json_string);
+        let stream = Stream::new(reader);
+        let expected: Vec<(Path, Scalar)> = vec![
+            (path![key!("employees"), idx!(0), key!("id")], scalar!("1")),
+            (
+                path![key!("employees"), idx!(0), key!("name")],
+                scalar!("\"John Doe\""),
+            ),
+            (
+                path![key!("employees"), idx!(0), key!("is_manager")],
+                scalar!("true"),
+            ),
+            (path![key!("employees"), idx!(1), key!("id")], scalar!("2")),
+            (
+                path![key!("employees"), idx!(1), key!("name")],
+                scalar!("\"Jean Dupont\""),
+            ),
+            (
+                path![key!("employees"), idx!(1), key!("is_manager")],
+                scalar!("false"),
+            ),
+        ];
+
+        assert!(stream.is_ok());
+        assert_eq!(stream.unwrap().collect::<Vec<(Path, Scalar)>>(), expected);
+    }
+}

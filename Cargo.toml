@@ -25,3 +25,7 @@ manual_string_new = "warn"
 anyhow = "1.0.100"
 itertools = "0.14.0"
 serde_json = {version = "1.0.145", features = ["preserve_order"]}
+
+[dev-dependencies]
+pretty_assertions = "*"
+test-case = "*"
