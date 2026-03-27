@@ -7,6 +7,7 @@ use serde_json::Value;
 use flatten::Path;
 use flatten::PathComponent;
 
+#[derive(Debug, PartialEq)]
 pub struct Scalar(String);
 
 impl From<Value> for Scalar {

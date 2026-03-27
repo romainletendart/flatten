@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum PathComponent {
     Key(String),
     Index(usize),
@@ -15,7 +15,7 @@ impl Display for PathComponent {
     }
 }
 
-#[derive(Clone, Default)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct Path {
     components: Vec<PathComponent>,
 }
