@@ -14,7 +14,7 @@ fn main() -> Result<(), Error> {
 
     let json_reader = BufReader::new(json_file);
     let stream = json::Stream::new(json_reader)?;
-    for (path, value) in stream.map(std::convert::Into::into) {
+    for (path, value) in stream {
         println!("{path} = {value}");
     }
 

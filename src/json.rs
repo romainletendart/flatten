@@ -1,3 +1,4 @@
+use std::fmt::Display;
 use std::io::Read;
 
 use anyhow::Error;
@@ -5,6 +6,20 @@ use serde_json::Value;
 
 use flatten::Path;
 use flatten::PathComponent;
+
+pub struct Scalar(String);
+
+impl From<Value> for Scalar {
+    fn from(value: Value) -> Self {
+        Self(value.to_string())
+    }
+}
+
+impl Display for Scalar {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
 
 pub struct PathValue {
     path: Path,
@@ -25,8 +40,8 @@ impl From<PathValue> for (Path, Value) {
 }
 
 impl IntoIterator for PathValue {
-    type Item = Self;
-    type IntoIter = Box<dyn Iterator<Item = Self>>;
+    type Item = (Path, Scalar);
+    type IntoIter = Box<dyn Iterator<Item = (Path, Scalar)>>;
 
     fn into_iter(self) -> Self::IntoIter {
         match self.value {
@@ -49,13 +64,13 @@ impl IntoIterator for PathValue {
                 });
                 Box::new(it)
             }
-            _ => Box::new([PathValue::new(self.path.clone(), self.value.clone())].into_iter()),
+            _ => Box::new([(self.path, self.value.into())].into_iter()),
         }
     }
 }
 
 pub struct Stream {
-    path_value_iterator: Box<dyn Iterator<Item = PathValue>>,
+    path_value_iterator: Box<dyn Iterator<Item = (Path, Scalar)>>,
 }
 
 impl Stream {
@@ -71,7 +86,7 @@ impl Stream {
 }
 
 impl Iterator for Stream {
-    type Item = PathValue;
+    type Item = (Path, Scalar);
 
     fn next(&mut self) -> Option<Self::Item> {
         self.path_value_iterator.next()
