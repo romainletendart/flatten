@@ -1,5 +1,5 @@
 use std::fmt::Display;
-use std::io::Read;
+use std::io::BufRead;
 
 use anyhow::Error;
 use serde_json::Value;
@@ -75,10 +75,17 @@ pub struct Stream {
 }
 
 impl Stream {
-    pub fn new<R: Read>(reader: R) -> Result<Self, Error> {
+    pub fn new<R: BufRead>(mut reader: R) -> Result<Self, Error> {
         let path: Path = Path::default();
-        let value: Value = serde_json::from_reader(reader)?;
-        let path_value_iterator = PathValue::new(path, value).into_iter();
+        let path_value_iterator = {
+            if reader.fill_buf()?.is_empty() {
+                // An empty stream should result in an empty iterator.
+                Box::new(Vec::new().into_iter())
+            } else {
+                let value: Value = serde_json::from_reader(reader)?;
+                PathValue::new(path, value).into_iter()
+            }
+        };
 
         Ok(Self {
             path_value_iterator,
@@ -126,6 +133,15 @@ mod test {
         ($e:expr) => {
             Scalar($e.to_string())
         };
+    }
+
+    #[test]
+    fn test_empty_json_string_results_in_empty_stream() {
+        let reader = Cursor::new("");
+        let stream = Stream::new(reader);
+
+        assert!(stream.is_ok());
+        assert_eq!(stream.unwrap().collect::<Vec<(Path, Scalar)>>(), Vec::new());
     }
 
     #[test_case("null")]
