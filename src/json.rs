@@ -1,8 +1,8 @@
 use std::fmt::Display;
 use std::io::BufRead;
 
-use anyhow::Error;
 use serde_json::Value;
+use thiserror::Error;
 
 use flatten::Path;
 use flatten::PathComponent;
@@ -70,12 +70,21 @@ impl IntoIterator for PathValue {
     }
 }
 
+#[derive(Error, Debug)]
+pub enum StreamError {
+    #[error("IO error")]
+    Io(#[from] std::io::Error),
+
+    #[error("Could not parse input JSON")]
+    Parsing(#[from] serde_json::Error),
+}
+
 pub struct Stream {
     path_value_iterator: Box<dyn Iterator<Item = (Path, Scalar)>>,
 }
 
 impl Stream {
-    pub fn new<R: BufRead>(mut reader: R) -> Result<Self, Error> {
+    pub fn new<R: BufRead>(mut reader: R) -> Result<Self, StreamError> {
         let path: Path = Path::default();
         let path_value_iterator = {
             if reader.fill_buf()?.is_empty() {
