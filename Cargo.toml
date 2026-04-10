@@ -22,10 +22,10 @@ pedantic = "warn"
 manual_string_new = "warn"
 
 [dependencies]
-anyhow = "1.0.100"
-itertools = "0.14.0"
-serde_json = {version = "1.0.145", features = ["preserve_order"]}
+anyhow = "1.0"
+itertools = "0.14"
+serde_json = {version = "1.0", features = ["preserve_order"]}
 
 [dev-dependencies]
-pretty_assertions = "*"
-test-case = "*"
+pretty_assertions = "1.4"
+test-case = "3.3"
