@@ -3,6 +3,7 @@ use std::io::BufReader;
 use anyhow::{Context, Error, Result};
 
 mod json;
+mod json_parser;
 
 fn main() -> Result<(), Error> {
     let mut args = std::env::args();
