@@ -146,7 +146,7 @@ mod test {
 
     #[test_case("null")]
     #[test_case("42")]
-    #[test_case("6.022e23")]
+    #[test_case("6.022e+23")]
     #[test_case("true")]
     #[test_case("false")]
     #[test_case("\"\""; "empty string")]
