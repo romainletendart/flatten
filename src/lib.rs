@@ -45,3 +45,12 @@ impl std::ops::Add for Path {
         }
     }
 }
+
+#[derive(Debug, PartialEq)]
+pub struct Scalar(pub String);
+
+impl Display for Scalar {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
+}

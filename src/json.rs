@@ -1,4 +1,3 @@
-use std::fmt::Display;
 use std::io::BufRead;
 
 use serde_json::Value;
@@ -6,21 +5,7 @@ use thiserror::Error;
 
 use flatten::Path;
 use flatten::PathComponent;
-
-#[derive(Debug, PartialEq)]
-pub struct Scalar(String);
-
-impl From<Value> for Scalar {
-    fn from(value: Value) -> Self {
-        Self(value.to_string())
-    }
-}
-
-impl Display for Scalar {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        self.0.fmt(f)
-    }
-}
+use flatten::Scalar;
 
 pub struct PathValue {
     path: Path,
@@ -65,7 +50,7 @@ impl IntoIterator for PathValue {
                 });
                 Box::new(it)
             }
-            _ => Box::new([(self.path, self.value.into())].into_iter()),
+            _ => Box::new([(self.path, Scalar(self.value.to_string()))].into_iter()),
         }
     }
 }
